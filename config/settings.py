@@ -499,3 +499,7 @@ def get_settings() -> Settings:
                 f"CRITICAL SETTINGS ERROR: {e}. Please check your .env file and Settings model."
             )
     return _settings_instance
+
+
+# Создаём глобальный экземпляр settings для удобного импорта
+settings = get_settings()
