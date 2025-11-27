@@ -93,7 +93,7 @@
 
 1. **Клонируйте репозиторий:**
 ```bash
-git clone <repository-url>
+git clone https://github.com/2getpro/2GETPRO-v2.git
 cd 2GETPRO_v2
 ```
 
