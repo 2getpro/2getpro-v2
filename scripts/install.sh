@@ -682,35 +682,63 @@ create_system_user() {
 }
 
 clone_repository() {
-    print_step "Клонирование репозитория..."
+    print_step "Проверка директории проекта..."
     
-    if [[ -d "$PROJECT_DIR/.git" ]]; then
-        print_info "Репозиторий уже клонирован"
+    if [[ "$DRY_RUN" == true ]]; then
+        print_info "[DRY RUN] Пропуск проверки репозитория"
         return
     fi
     
-    if [[ "$DRY_RUN" == true ]]; then
-        print_info "[DRY RUN] Пропуск клонирования репозитория"
+    # Если директория существует и это git-репозиторий
+    if [[ -d "$PROJECT_DIR/.git" ]]; then
+        print_info "Репозиторий уже существует в $PROJECT_DIR"
+        print_info "Обновление кода из git..."
+        
+        cd "$PROJECT_DIR"
+        if git pull origin main >> "$LOG_FILE" 2>&1; then
+            print_success "Код обновлён из репозитория"
+        else
+            print_warning "Не удалось обновить код, продолжаем с текущей версией"
+        fi
         return
     fi
     
     # Если директория существует, но не является git-репозиторием
     if [[ -d "$PROJECT_DIR" ]]; then
         print_warning "Директория $PROJECT_DIR уже существует"
-        read -p "Удалить и клонировать заново? (y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm -rf "$PROJECT_DIR"
+        
+        # Проверяем, есть ли в ней файлы проекта
+        if [[ -f "$PROJECT_DIR/main.py" ]] && [[ -f "$PROJECT_DIR/requirements.txt" ]]; then
+            print_info "Обнаружены файлы проекта, продолжаем установку"
+            print_success "Используем существующий код"
+            return
+        fi
+        
+        # Если это не наш проект, спрашиваем что делать
+        if [[ "$SKIP_CONFIRMATIONS" == false ]]; then
+            read -p "Удалить и клонировать заново? (y/n): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                rm -rf "$PROJECT_DIR"
+            else
+                print_info "Продолжаем с существующей директорией"
+                return
+            fi
         else
-            print_error "Установка прервана"
-            exit 1
+            print_info "Продолжаем с существующей директорией"
+            return
         fi
     fi
     
-    # Клонирование (замените URL на реальный)
-    git clone https://github.com/2getpro/2GETPRO_v2.git "$PROJECT_DIR" >> "$LOG_FILE" 2>&1
-    
-    print_success "Репозиторий клонирован"
+    # Клонирование репозитория
+    print_step "Клонирование репозитория..."
+    if git clone https://github.com/2getpro/2GETPRO_v2.git "$PROJECT_DIR" >> "$LOG_FILE" 2>&1; then
+        print_success "Репозиторий клонирован"
+    else
+        print_error "Не удалось клонировать репозиторий"
+        print_info "Проверьте подключение к интернету и доступ к GitHub"
+        return 1
+    fi
 }
 
 setup_permissions() {
