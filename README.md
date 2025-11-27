@@ -32,7 +32,7 @@
 ssh root@your-server-ip
 
 # 2. Скачайте проект
-git clone https://github.com/your-username/2GETPRO_v2.git /opt/2getpro-v2
+git clone https://github.com/your-username/2GETPRO_v2.git
 cd /opt/2getpro-v2
 
 # 3. Запустите автоматический установщик
