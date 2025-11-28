@@ -177,10 +177,10 @@ async def update_provider_payment_and_status(
 
 async def get_financial_statistics(session: AsyncSession) -> Dict[str, Any]:
     """Get comprehensive financial statistics."""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
     from sqlalchemy import and_, text
     
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = today_start - timedelta(days=7)
     month_start = today_start - timedelta(days=30)

@@ -121,7 +121,7 @@ class AuditLogger:
                 'action': action.value,
                 'details': details or {},
                 'ip_address': ip_address,
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'type': 'action'
             }
             
@@ -169,7 +169,7 @@ class AuditLogger:
                 'user_id': user_id,
                 'ip_address': ip_address,
                 'severity': severity,
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'type': 'security'
             }
             

@@ -138,9 +138,8 @@ scrape_configs:
 storage:
   tsdb:
     path: /prometheus
-    retention:
-      time: 30d
-      size: 50GB
+    retention.time: 30d
+    retention.size: 50GB
     wal_compression: true
 
 # Remote write (опционально - для долгосрочного хранения)

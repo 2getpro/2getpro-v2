@@ -11,7 +11,7 @@
 from typing import Optional, Dict, Any
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
@@ -53,7 +53,7 @@ class StructuredLogger:
         """
         # Базовая структура
         structured = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'message': message,
         }
         

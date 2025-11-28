@@ -12,7 +12,7 @@ Health checker для проверки состояния системы.
 from typing import Dict, Any, Optional
 import asyncio
 import aiohttp
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import redis.asyncio as aioredis
@@ -58,7 +58,7 @@ class HealthChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Database session not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Простой запрос для проверки подключения
@@ -68,14 +68,14 @@ class HealthChecker:
             return {
                 'status': 'healthy',
                 'message': 'Database connection is working',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'unhealthy',
                 'message': f'Database connection failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_redis(self) -> Dict[str, Any]:
@@ -90,7 +90,7 @@ class HealthChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Redis URL not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Создаем клиент если его нет
@@ -107,14 +107,14 @@ class HealthChecker:
             return {
                 'status': 'healthy',
                 'message': 'Redis connection is working',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'unhealthy',
                 'message': f'Redis connection failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_telegram_api(self) -> Dict[str, Any]:
@@ -129,7 +129,7 @@ class HealthChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Telegram token not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             url = f'https://api.telegram.org/bot{self.telegram_token}/getMe'
@@ -143,27 +143,27 @@ class HealthChecker:
                                 'status': 'healthy',
                                 'message': 'Telegram API is accessible',
                                 'bot_username': data.get('result', {}).get('username'),
-                                'timestamp': datetime.utcnow().isoformat()
+                                'timestamp': datetime.now(timezone.utc).isoformat()
                             }
                     
                     return {
                         'status': 'unhealthy',
                         'message': f'Telegram API returned status {response.status}',
-                        'timestamp': datetime.utcnow().isoformat()
+                        'timestamp': datetime.now(timezone.utc).isoformat()
                     }
         except asyncio.TimeoutError:
             return {
                 'status': 'unhealthy',
                 'message': 'Telegram API request timeout',
                 'error': 'TimeoutError',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'unhealthy',
                 'message': f'Telegram API check failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_panel(self) -> Dict[str, Any]:
@@ -178,7 +178,7 @@ class HealthChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Panel URL not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Проверяем health endpoint панели
@@ -193,27 +193,27 @@ class HealthChecker:
                         return {
                             'status': 'healthy',
                             'message': 'Panel is accessible',
-                            'timestamp': datetime.utcnow().isoformat()
+                            'timestamp': datetime.now(timezone.utc).isoformat()
                         }
                     
                     return {
                         'status': 'unhealthy',
                         'message': f'Panel returned status {response.status}',
-                        'timestamp': datetime.utcnow().isoformat()
+                        'timestamp': datetime.now(timezone.utc).isoformat()
                     }
         except asyncio.TimeoutError:
             return {
                 'status': 'unhealthy',
                 'message': 'Panel request timeout',
                 'error': 'TimeoutError',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'unhealthy',
                 'message': f'Panel check failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_payment_system(
@@ -241,27 +241,27 @@ class HealthChecker:
                         return {
                             'status': 'healthy',
                             'message': f'{name} is accessible',
-                            'timestamp': datetime.utcnow().isoformat()
+                            'timestamp': datetime.now(timezone.utc).isoformat()
                         }
                     
                     return {
                         'status': 'unhealthy',
                         'message': f'{name} returned status {response.status}',
-                        'timestamp': datetime.utcnow().isoformat()
+                        'timestamp': datetime.now(timezone.utc).isoformat()
                     }
         except asyncio.TimeoutError:
             return {
                 'status': 'unhealthy',
                 'message': f'{name} request timeout',
                 'error': 'TimeoutError',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'unhealthy',
                 'message': f'{name} check failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_all_payment_systems(self) -> Dict[str, Dict[str, Any]]:
@@ -324,7 +324,7 @@ class HealthChecker:
         
         return {
             'status': overall_status,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'checks': {
                 'database': database_check if not isinstance(database_check, Exception) else {
                     'status': 'unhealthy',

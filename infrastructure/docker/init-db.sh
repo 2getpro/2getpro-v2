@@ -7,7 +7,7 @@ set -e
 echo "Проверка существования базы данных..."
 
 # Получаем имя базы данных из переменной окружения
-DB_NAME="${POSTGRES_DB:-vpn_shop_db}"
+DB_NAME="${POSTGRES_DB:-user}"
 
 # Проверяем существование БД
 if psql -U "$POSTGRES_USER" -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then

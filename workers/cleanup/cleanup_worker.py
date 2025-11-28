@@ -7,8 +7,8 @@ Worker для очистки данных.
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Any, Dict
 
 from sqlalchemy import text, delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -47,7 +47,7 @@ class CleanupWorker:
         self.redis = redis_client
         self.cleanup_interval = cleanup_interval
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: Optional["asyncio.Task[Any]"] = None
     
     async def start(self) -> None:
         """Запуск worker."""
@@ -82,7 +82,7 @@ class CleanupWorker:
                 logger.error(f"Ошибка в CleanupWorker: {e}", exc_info=True)
                 await asyncio.sleep(60)  # Ждем минуту перед повтором
     
-    async def run_cleanup(self) -> dict:
+    async def run_cleanup(self) -> Dict[str, int]:
         """
         Выполнение всех задач очистки.
         
@@ -113,7 +113,7 @@ class CleanupWorker:
         """
         try:
             async with self.session_factory() as session:
-                cutoff_date = datetime.utcnow() - timedelta(days=days)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
                 
                 query = text("""
                     DELETE FROM sessions
@@ -144,7 +144,7 @@ class CleanupWorker:
         """
         try:
             async with self.session_factory() as session:
-                cutoff_date = datetime.utcnow() - timedelta(days=days)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
                 
                 query = text("""
                     DELETE FROM message_logs
@@ -200,7 +200,7 @@ class CleanupWorker:
         """
         try:
             async with self.session_factory() as session:
-                cutoff_date = datetime.utcnow() - timedelta(days=days)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
                 
                 # Помечаем старые завершенные платежи как архивные
                 query = text("""

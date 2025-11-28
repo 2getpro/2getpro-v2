@@ -355,7 +355,7 @@ class RestoreManager:
         Returns:
             bool: True если тест успешен
         """
-        test_db = f"{self.config.DB_NAME}_test_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        test_db = f"{self.config.DB_NAME}_test_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
         logger.info(f"Тестовое восстановление в БД: {test_db}")
         
         try:
@@ -387,7 +387,7 @@ class RestoreManager:
         Returns:
             str: ID snapshot
         """
-        snapshot_id = f"snapshot_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        snapshot_id = f"snapshot_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
         snapshot_db = f"{self.config.DB_NAME}_{snapshot_id}"
         
         logger.info(f"Создание snapshot: {snapshot_db}")

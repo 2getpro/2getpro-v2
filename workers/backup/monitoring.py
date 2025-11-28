@@ -61,7 +61,7 @@ class BackupMonitoring:
                 }
             
             backup_date = datetime.fromisoformat(latest_backup['timestamp'])
-            age_hours = (datetime.utcnow() - backup_date).total_seconds() / 3600
+            age_hours = (datetime.now(timezone.utc) - backup_date).total_seconds() / 3600
             
             # Проверка свежести бэкапа (не старше 25 часов для ежедневных)
             if age_hours > 25:
@@ -132,7 +132,7 @@ class BackupMonitoring:
 Произошла ошибка при создании резервной копии.
 
 Backup ID: {backup_id}
-Время: {datetime.utcnow().isoformat()}
+Время: {datetime.now(timezone.utc).isoformat()}
 Ошибка: {error}
 
 Требуется проверка системы резервного копирования.
@@ -165,7 +165,7 @@ Backup ID: {backup_id}
 🚨 *ALERT: Ошибка резервного копирования*
 
 *Backup ID:* `{backup_id}`
-*Время:* {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+*Время:* {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 *Ошибка:* {error}
 
 Требуется проверка системы резервного копирования.
@@ -229,13 +229,13 @@ Backup ID: {backup_id}
         logger.info(f"Генерация отчета о бэкапах за {period_days} дней")
         
         try:
-            start_date = datetime.utcnow() - timedelta(days=period_days)
+            start_date = datetime.now(timezone.utc) - timedelta(days=period_days)
             backups = await self.backup_manager.list_backups(start_date=start_date)
             
             report = {
                 'period_days': period_days,
                 'start_date': start_date.isoformat(),
-                'end_date': datetime.utcnow().isoformat(),
+                'end_date': datetime.now(timezone.utc).isoformat(),
                 'total_backups': len(backups),
                 'successful_backups': len([b for b in backups if b.get('status') == 'completed']),
                 'failed_backups': len([b for b in backups if b.get('status') == 'failed']),
@@ -326,7 +326,7 @@ Backup ID: {backup_id}
         try:
             report = await self.generate_backup_report(period_days=1)
             
-            subject = f"Ежедневный отчет о резервном копировании - {datetime.utcnow().strftime('%Y-%m-%d')}"
+            subject = f"Ежедневный отчет о резервном копировании - {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
             body = f"""
 Ежедневный отчет о резервном копировании
 
@@ -399,7 +399,7 @@ Backup ID: {backup_id}
         """
         logger.info(f"Начало мониторинга бэкапа: {backup_id}")
         
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Ожидание завершения бэкапа (с таймаутом)
         timeout = 3600  # 1 час
@@ -407,7 +407,7 @@ Backup ID: {backup_id}
         
         while elapsed < timeout:
             await asyncio.sleep(10)
-            elapsed = (datetime.utcnow() - start_time).total_seconds()
+            elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
             
             metadata = await self.backup_manager.get_backup_info(backup_id)
             if metadata and metadata.get('status') in ['completed', 'failed']:

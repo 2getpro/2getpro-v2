@@ -7,7 +7,7 @@
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 
 from .config import BackupConfig, get_backup_config
@@ -85,7 +85,7 @@ class RetentionPolicy:
         Returns:
             Dict[str, List[Dict]]: Классифицированные бэкапы
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         classified = {
             'daily': [],
@@ -132,7 +132,7 @@ class RetentionPolicy:
         Returns:
             int: Количество удаленных бэкапов
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=self.config.DAILY_RETENTION_DAYS)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=self.config.DAILY_RETENTION_DAYS)
         deleted_count = 0
         
         for backup in daily_backups:
@@ -154,7 +154,7 @@ class RetentionPolicy:
         Returns:
             int: Количество удаленных бэкапов
         """
-        cutoff_date = datetime.utcnow() - timedelta(weeks=self.config.WEEKLY_RETENTION_WEEKS)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(weeks=self.config.WEEKLY_RETENTION_WEEKS)
         deleted_count = 0
         
         for backup in weekly_backups:
@@ -176,7 +176,7 @@ class RetentionPolicy:
         Returns:
             int: Количество удаленных бэкапов
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=30 * self.config.MONTHLY_RETENTION_MONTHS)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=30 * self.config.MONTHLY_RETENTION_MONTHS)
         deleted_count = 0
         
         for backup in monthly_backups:
@@ -198,7 +198,7 @@ class RetentionPolicy:
         Returns:
             int: Количество удаленных бэкапов
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=365 * self.config.YEARLY_RETENTION_YEARS)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=365 * self.config.YEARLY_RETENTION_YEARS)
         deleted_count = 0
         
         for backup in yearly_backups:
@@ -246,7 +246,7 @@ class RetentionPolicy:
         Returns:
             str: Категория хранения (daily/weekly/monthly/yearly)
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         age_days = (now - backup_date).days
         
         if age_days < 7:
@@ -268,7 +268,7 @@ class RetentionPolicy:
         backups = await self.backup_manager.list_backups()
         classified = self._classify_backups(backups)
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         stats = {
             'daily': {
@@ -318,7 +318,7 @@ class RetentionPolicy:
         backups = await self.backup_manager.list_backups()
         classified = self._classify_backups(backups)
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         to_delete = {
             'daily': [],
@@ -379,7 +379,7 @@ class RetentionPolicy:
         """
         logger.warning(f"Принудительная очистка бэкапов старше {older_than_days} дней")
         
-        cutoff_date = datetime.utcnow() - timedelta(days=older_than_days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=older_than_days)
         backups = await self.backup_manager.list_backups()
         deleted_count = 0
         

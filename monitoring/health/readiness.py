@@ -8,7 +8,7 @@ Readiness checker для проверки готовности системы к
 """
 
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import redis.asyncio as aioredis
@@ -45,7 +45,7 @@ class ReadinessChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Database session not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Проверяем наличие таблицы миграций
@@ -63,7 +63,7 @@ class ReadinessChecker:
                 return {
                     'status': 'not_ready',
                     'message': 'Migrations table does not exist',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Получаем текущую версию миграции
@@ -76,21 +76,21 @@ class ReadinessChecker:
                 return {
                     'status': 'not_ready',
                     'message': 'No migrations applied',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             return {
                 'status': 'ready',
                 'message': 'Database migrations are up to date',
                 'current_version': current_version,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'not_ready',
                 'message': f'Failed to check migrations: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_cache(self) -> Dict[str, Any]:
@@ -105,7 +105,7 @@ class ReadinessChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Redis URL not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Создаем клиент если его нет
@@ -130,7 +130,7 @@ class ReadinessChecker:
                 return {
                     'status': 'not_ready',
                     'message': 'Cache read/write test failed',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Удаляем тестовый ключ
@@ -139,14 +139,14 @@ class ReadinessChecker:
             return {
                 'status': 'ready',
                 'message': 'Cache is ready',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'not_ready',
                 'message': f'Cache check failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_database_connection(self) -> Dict[str, Any]:
@@ -161,7 +161,7 @@ class ReadinessChecker:
                 return {
                     'status': 'unknown',
                     'message': 'Database session not configured',
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 }
             
             # Проверяем подключение
@@ -171,14 +171,14 @@ class ReadinessChecker:
             return {
                 'status': 'ready',
                 'message': 'Database connection is ready',
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             return {
                 'status': 'not_ready',
                 'message': f'Database connection failed: {str(e)}',
                 'error': type(e).__name__,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
     
     async def check_all(self) -> Dict[str, Any]:
@@ -204,7 +204,7 @@ class ReadinessChecker:
         
         return {
             'status': overall_status,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'checks': {
                 'database_connection': db_connection,
                 'database_migrations': db_migrations,

@@ -8,7 +8,7 @@
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -311,7 +311,7 @@ class BackupManager:
         metadata['status'] = status
         if error:
             metadata['error'] = error
-        metadata['updated_at'] = datetime.utcnow().isoformat()
+        metadata['updated_at'] = datetime.now(timezone.utc).isoformat()
         
         await self.save_metadata(backup_id, metadata)
         logger.info(f"Статус бэкапа обновлен: {backup_id} -> {status}")

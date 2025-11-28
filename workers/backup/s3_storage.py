@@ -423,13 +423,13 @@ class S3Storage:
         Returns:
             int: Количество удаленных файлов
         """
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
         
         logger.info(f"Очистка старых файлов в S3 (старше {days} дней)")
         
         try:
             files = await self.list_files(prefix)
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
             deleted_count = 0
             
             for file_info in files:

@@ -75,7 +75,7 @@ class BackupWorker:
         Raises:
             Exception: При ошибке создания бэкапа
         """
-        backup_id = f"full_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        backup_id = f"full_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
         backup_path = Path(self.config.BACKUP_DIR) / f"{backup_id}.sql"
         
         logger.info(f"Начало создания полного бэкапа: {backup_id}")
@@ -99,7 +99,7 @@ class BackupWorker:
             metadata = {
                 'backup_id': backup_id,
                 'type': 'full',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'size': backup_path.stat().st_size,
                 'checksum': checksum,
                 'compressed': self.config.COMPRESSION_ENABLED,
@@ -124,7 +124,7 @@ class BackupWorker:
             await self.backup_manager.save_metadata(backup_id, {
                 'backup_id': backup_id,
                 'type': 'full',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'status': 'failed',
                 'error': str(e)
             })
@@ -143,7 +143,7 @@ class BackupWorker:
         if not self.config.WAL_ARCHIVE_ENABLED:
             raise ValueError("WAL архивирование не включено")
         
-        backup_id = f"incremental_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        backup_id = f"incremental_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
         
         logger.info(f"Начало создания инкрементального бэкапа: {backup_id}")
         
@@ -166,7 +166,7 @@ class BackupWorker:
             metadata = {
                 'backup_id': backup_id,
                 'type': 'incremental',
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'wal_files': len(wal_files),
                 'status': 'completed'
             }
@@ -368,7 +368,7 @@ class BackupWorker:
         while True:
             try:
                 # Расчет времени до следующего бэкапа (2:00 UTC)
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)
                 next_backup = now.replace(hour=2, minute=0, second=0, microsecond=0)
                 if now >= next_backup:
                     next_backup += timedelta(days=1)
@@ -393,7 +393,7 @@ class BackupWorker:
         while True:
             try:
                 # Ожидание до начала следующего часа
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)
                 next_backup = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
                 wait_seconds = (next_backup - now).total_seconds()
                 

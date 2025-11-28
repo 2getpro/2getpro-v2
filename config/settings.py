@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     FREEKASSA_PAYMENT_URL: str = Field(default="https://pay.freekassa.ru/")
     FREEKASSA_API_KEY: Optional[str] = None
     FREEKASSA_PAYMENT_IP: Optional[str] = None
-    FREEKASSA_PAYMENT_METHOD_ID: Optional[int] = Field(default=None, description="FreeKassa payment method ID (optional)")
+    FREEKASSA_PAYMENT_METHOD_ID: Optional[str] = Field(default=None, description="FreeKassa payment method ID (optional)")
 
     YOOKASSA_ENABLED: bool = Field(default=True)
     STARS_ENABLED: bool = Field(default=True)
@@ -416,24 +416,37 @@ class Settings(BaseSettings):
     LOG_CHAT_ID: Optional[int] = Field(default=None, description="Telegram chat/group ID for sending notifications")
     LOG_THREAD_ID: Optional[int] = Field(default=None, description="Thread ID for supergroup messages (optional)")
     
-    @field_validator('LOG_CHAT_ID', 'LOG_THREAD_ID', 'FREEKASSA_PAYMENT_METHOD_ID', mode='before')
+    @field_validator('LOG_CHAT_ID', 'LOG_THREAD_ID', mode='before')
     @classmethod
-    def validate_optional_int_fields(cls, v):
+    def validate_optional_int_fields(cls, v: Any):
         """Convert empty strings to None for optional integer fields"""
         if isinstance(v, str) and v.strip() == '':
             return None
         return v
+    
+    @field_validator('FREEKASSA_PAYMENT_METHOD_ID', mode='before')
+    @classmethod
+    def validate_freekassa_payment_method_id(cls, v: Any):
+        """Convert FREEKASSA_PAYMENT_METHOD_ID to int or None"""
+        if isinstance(v, str) and v.strip() == '':
+            return None
+        if v is None:
+            return None
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            raise ValueError(f"FREEKASSA_PAYMENT_METHOD_ID must be a valid integer, got: {v}")
 
     @field_validator('REQUIRED_CHANNEL_LINK', mode='before')
     @classmethod
-    def sanitize_optional_link(cls, v):
+    def sanitize_optional_link(cls, v: Any):
         if isinstance(v, str) and not v.strip():
             return None
         return v
     
     @field_validator('USER_HWID_DEVICE_LIMIT', mode='before')
     @classmethod
-    def validate_optional_int(cls, v):
+    def validate_optional_int(cls, v: Any):
         if isinstance(v, str):
             v = v.strip()
             if not v:

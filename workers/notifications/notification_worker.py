@@ -7,10 +7,10 @@ Worker для отправки уведомлений.
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Optional, List, Any
+from datetime import datetime, timedelta, timezone
+from typing import Optional, List, Dict, Any
 
-from sqlalchemy import text, select
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from aiogram import Bot
 
@@ -45,7 +45,7 @@ class NotificationWorker:
         self.bot = bot
         self.check_interval = check_interval
         self._running = False
-        self._task: Optional[asyncio.Task] = None
+        self._task: Optional["asyncio.Task[Any]"] = None
     
     async def start(self) -> None:
         """Запуск worker."""
@@ -80,7 +80,7 @@ class NotificationWorker:
                 logger.error(f"Ошибка в NotificationWorker: {e}", exc_info=True)
                 await asyncio.sleep(60)
     
-    async def process_notifications(self) -> dict:
+    async def process_notifications(self) -> Dict[str, int]:
         """
         Обработка всех уведомлений.
         
@@ -114,7 +114,7 @@ class NotificationWorker:
         try:
             async with self.session_factory() as session:
                 # Находим подписки, истекающие через N дней
-                target_date = datetime.utcnow() + timedelta(days=days_before)
+                target_date = datetime.now(timezone.utc) + timedelta(days=days_before)
                 start_range = target_date.replace(hour=0, minute=0, second=0)
                 end_range = target_date.replace(hour=23, minute=59, second=59)
                 
@@ -181,7 +181,7 @@ class NotificationWorker:
         try:
             async with self.session_factory() as session:
                 # Находим неоплаченные платежи старше 1 часа
-                cutoff_time = datetime.utcnow() - timedelta(hours=1)
+                cutoff_time = datetime.now(timezone.utc) - timedelta(hours=1)
                 
                 query = text("""
                     SELECT 
